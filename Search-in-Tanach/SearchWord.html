@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>חיפוש מילה</title>
+    <link rel="stylesheet" href="Style.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <header>
+        <a href="HomePage.html"><button class="back">אחורה</button></a>
+        <h1>מצא מילה בתנ"ך</h1>
+    </header>
+
+    <input placeholder="הקלד את המילה לחיפוש" class="input" id="word" />
+
+    <div onclick="SearchWord()" class="search"></div>
+    <br /><br /><br /><br />
+
+    <div id="result"></div>
+
+    <script>
+        function SearchWord() {
+            axios.get("https://localhost:7231/api/Tanach/GetWord?word=" + document.getElementById("word").value)
+                .then((result) => {
+                View(result.data)
+            });
+        }
+        function View(result) {
+            if (result == "") {
+                document.getElementById("result").innerHTML = "<b>אין תוצאות התואמות את החיפוש הזה</b>"
+                document.getElementById("result").style = "margin-right:46vw;"
+                return
+            }
+            document.getElementById("result").style = "margin-right:0vw;"
+            list = JSON.stringify(result);
+            list = list.substring(1, list.length - 1).split("{");
+
+            let word = "", all = "", sefer = "", paracha = "", perek = "", pasuk = ""
+
+            document.getElementById("result").innerHTML = ""
+            for (i = 0; i < list.length - 1; i++) {
+                list[i] = list[i].replace("}", "")
+
+                word = JSON.stringify(result[i].wordFound)
+                all = JSON.stringify(result[i].allPasuk)
+                sefer = JSON.stringify(result[i].sefer)
+                paracha = JSON.stringify(result[i].paracha)
+                perek = JSON.stringify(result[i].perek)
+                pasuk = JSON.stringify(result[i].pasuk)
+
+                pasuk_words = all.split(' ')
+                index = -1
+                str1 = "", str2 = "", str3 = ""
+                for (j = 0; j < pasuk_words.length; j++) {
+                    if (pasuk_words[j] == word.substring(1, word.length - 1) ||
+                        pasuk_words[j].substring(1) == word.substring(1, word.length - 1) ||
+                        pasuk_words[j].substring(0, pasuk_words[j].length - 1)
+                        == word.substring(1, word.length - 1)) {
+                        index = j
+                        str2 = pasuk_words[j]
+                    }
+                    else if (index != -1) {
+                        str3 += " " + pasuk_words[j]
+                    }
+                    else {
+                        str1 += pasuk_words[j] + " "
+                    }
+                }
+
+                document.getElementById("result").innerHTML += "<div id='inner" + i +
+                    "' class='inners'></div>"
+                if (paracha != "\"\"") {
+                    document.getElementById("inner" + i).innerHTML += "<h3>" + word +
+                        "</h3><ul><li><b>הפסוק השלם: </b>" + str1 + "<label>" + str2 + "</label>" + str3 +
+                        "</li><li><b>ספר: </b>" + sefer +
+                        "</li><li><b>פרשה: </b>" + paracha + "</li><li><b>פרק: </b>" + perek +
+                        "</li><li><b>פסוק: </b>" + pasuk + "</li></ul><br/><br/>"
+                }
+                else {
+                    document.getElementById("inner" + i).innerHTML += "<h3>" + word +
+                        "</h3><ul><li><b>הפסוק השלם: </b>" + str1 + "<label>" + str2 + "</label>" +
+                        str3 + "</li><li><b>ספר: </b>" + sefer +
+                        "</li><li><b>פרק: </b>" + perek + "</li><li><b>פסוק: </b>" + pasuk +
+                        "</li></ul><br/><br/>"
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>

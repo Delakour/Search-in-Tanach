@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>חיפוש פסוק</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <header>
+        <a href="HomePage.html"><button class="back">אחורה</button></a>
+        <h1>מצא את הפסוק של השם שלך</h1>
+    </header>
+    <input placeholder="הכנס את שמך" class="input" id="name" />
+
+    <div onclick="SearchName()" class="search"></div>
+
+    <div id="result"></div>
+
+    <script>
+        function SearchName() {
+            axios.get("https://localhost:7231/api/Tanach/GetPasukName?name=" + document.getElementById("name").value, {
+            }).then((result) => {
+                View(result.data)
+            });
+        }
+
+        function View(result) {
+            if (result == "") {
+                document.getElementById("result").innerHTML = "<b>אין תוצאות התואמות את החיפוש הזה</b>"
+                document.getElementById("result").style = "margin-right:46vw;"
+                return
+            }
+            document.getElementById("result").style = "margin-right:0vw;"
+
+            list = JSON.stringify(result);
+            list = list.substring(1, list.length - 1).split(",");
+            document.getElementById("result").innerHTML = ""
+            let name = ""
+            for (i = 0; i < list.length; i++) {
+
+                name = document.getElementById("name").value
+                if (list[i].includes(name)) {
+                    pasuk_words = list[i].split(' ')
+                    index = -1
+                    str1 = "", str2 = "", str3 = ""
+                    for (j = 0; j < pasuk_words.length; j++) {
+                        if (pasuk_words[j] == name || pasuk_words[j].substring(1) == name ||
+                            pasuk_words[j].substring(0, pasuk_words[j].length - 1) == name) {
+                            index = j
+                            str2 = pasuk_words[j]
+                        }
+                        else if (index != -1) {
+                            str3 += " " + pasuk_words[j]
+                        }
+                        else {
+                            str1 += pasuk_words[j] + " "
+                        }
+                    }
+                    document.getElementById("result").innerHTML += "<li>" + str1 + "<label>" + str2 +
+                        "</label>" + str3 + "</li><br/><br/>"
+                }
+                else {
+                    document.getElementById("result").innerHTML += "<li>" + list[i].charAt(0) +
+                        "<label>" + list[i].charAt(1) + "</label>" +
+                        list[i].substring(2, list[i].length - 2) + "<label>" +
+                        list[i].charAt(list[i].length - 2) + "</label>" +
+                        list[i].charAt(list[i].length - 1) + "</li><br/><br/>"
+                }
+
+
+            }
+        }
+
+    </script>
+</body>
+</html>
